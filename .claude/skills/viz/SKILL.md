@@ -24,6 +24,12 @@ AskUserQuestion을 사용하여 확인:
 3. **표시해야 할 특정 날짜가 있나요?** (이벤트 출시일, 프로모션 기간 등)
 4. **기준선이 될 값이 있나요?** (평균, 목표치, 이전 기간 값 등)
 5. **그래프 유형 선호가 있나요?** (없으면 데이터에 맞게 자동 선택)
+6. **각 차트의 y축 단위를 확인:**
+   - 절대값(건수, 금액)이 메인인가, 비율(%)이 메인인가
+   - 절대값과 비율을 동시에 보여줄 경우 y축 메인 / bar label 보조 형태로 구성할 것인지
+7. **subplot 레이아웃을 코드 작성 전에 확정:**
+   - 몇 개의 figure, 몇 행 × 몇 열인지 명확히 정의
+   - figure를 중복 생성하거나 미완성 루프를 남기지 않도록 구조를 먼저 설계
 
 ### 2단계: 시각화 코드 생성
 `viz-helper` 에이전트를 호출:
@@ -38,7 +44,14 @@ Agent(subagent_type="viz-helper", prompt="[수집한 정보 + visualization-guid
 - ✅ 이벤트 날짜 수직선 (axvline)
 - ✅ 평균/기준선 (axhline)
 - ✅ 범례 표시
-- ✅ 이미지 저장 코드 포함 (보고서 첨부용)
+- ✅ savefig 필수 포함 — 디렉토리는 `{분석폴더}/thema{N}_fig/` 패턴 사용
+  ```python
+  _FIG_DIR = Path("{분석폴더}/thema{N}_fig")
+  _FIG_DIR.mkdir(parents=True, exist_ok=True)
+  # 각 fig마다:
+  fig1.savefig(_FIG_DIR / "fig1_{설명}.png", dpi=150, bbox_inches='tight')
+  ```
+  > 테마별로 폴더를 분리하면 `/interpret` 호출 시 경로로 바로 특정 가능
 
 ### 3단계: 코드 확인 및 수정
 - 생성된 코드를 사용자에게 보여주고 확인
