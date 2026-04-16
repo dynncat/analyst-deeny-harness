@@ -48,18 +48,60 @@ AskUserQuestion으로 확인:
 
 # %%
 # === 환경 설정 ===
+from google.cloud import bigquery
+from pandas_gbq import read_gbq
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime, timedelta
+from matplotlib.dates import DateFormatter
+from matplotlib.ticker import MaxNLocator
+from datetime import timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+import pickle
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import matplotlib.dates as mdates
+import matplotlib.ticker as mtick
+import matplotlib.ticker as mticker
 
-# 한글 폰트 설정
-plt.rcParams['font.family'] = 'AppleGothic'  # macOS
+os.environ["TQDM_DISABLE"] = "1"
+logging.getLogger("google.auth.transport.requests").setLevel(logging.ERROR)
+logging.getLogger("pandas_gbq").setLevel(logging.ERROR)
+logging.getLogger("pandas_gbq.gbq").setLevel(logging.ERROR)
+
 plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams['font.family'] = 'AppleGothic'
 
 # 유틸 함수 로드
-# [사용자의 유틸 로드 코드]
+from pathlib import Path
+import sys, os, logging
+
+def add_src_within_project(project_names=("datagrowth-analytics","datagrowth_analytics")):
+    if isinstance(project_names, (str, Path)):
+        project_set = {str(project_names).lower()}
+    else:
+        project_set = {str(x).lower() for x in project_names}
+    cur = Path.cwd().resolve()
+    for p in [cur] + list(cur.parents):
+        if p.name.lower() in project_set:
+            src = p / "src"
+            if (src / "library" / "__init__.py").exists():
+                sys.path.insert(0, str(src))
+                return p
+            raise FileNotFoundError(f"'{p}' 안에 src/library 가 없습니다. 실제 경로: {src}")
+    raise FileNotFoundError(f"프로젝트 루트 {sorted(project_set)} 를 찾지 못했습니다. 현재 CWD: {cur}")
+
+PROJECT_ROOT = add_src_within_project()
+import library.core as core
+from library import (
+    execute_query, get_bq_client,
+    get_athena_cursor, mysql_query_with_ssh
+)
+core._load_env_file()
 ```
 
 ### 가설 단위 구조
